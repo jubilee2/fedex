@@ -36,13 +36,21 @@ module Fedex
       @tracking_number        = details[:tracking_number]
       @unique_tracking_number = details[:tracking_number_unique_identifier]
       @signature_name         = details[:delivery_signature_name]
-      @service_type           = details[:service_type]
-      @status                 = details[:status_description]
-      @status_code            = details[:status_code]
       @other_identifiers      = details[:other_identifiers]
 
-      if details.has_key?(:actual_delivery_timestamp)
-        @delivery_at = Time.parse(details[:actual_delivery_timestamp])
+
+      if details[:service]
+        @service_type = details[:service][:type]
+      end
+
+      if details[:status_detail]
+        @status = details[:status_detail][:description]
+        @status_code = details[:status_detail][:code]
+      end
+
+      if details[:dates_or_times]
+        e = details[:dates_or_times].select{|event| event[:type]== 'ACTUAL_DELIVERY'}.first
+        @delivery_at = Time.parse(e[:date_or_timestamp]) if e
       end
 
       @events = [details[:events]].flatten.compact.map do |event_details|

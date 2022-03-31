@@ -406,5 +406,18 @@ module Fedex
       end
 
     end
+
+    class BaseV20 < Base
+      # Fedex Text URL
+      TEST_V20_URL = "https://wsbeta.fedex.com:443/web-services"
+
+      # Fedex Production URL
+      PRODUCTION_V20_URL = "https://ws.fedex.com:443/web-services"
+
+      # Fedex Web Service Api
+      def api_url
+        @credentials.mode == "production" ? PRODUCTION_V20_URL : TEST_V20_URL
+      end
+    end
   end
 end

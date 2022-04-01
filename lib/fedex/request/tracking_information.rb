@@ -33,6 +33,13 @@ module Fedex
           track_reply = response[:envelope][:body][:track_reply][:completed_track_details]
           options = track_reply[:track_details]
 
+          if !success_tracking?(options)
+            error_message = if options
+              options[:notification][:message]
+            end rescue $1
+            raise RateError, error_message
+          end
+
           if track_reply[:duplicate_waybill].downcase == 'true'
             shipments = []
             [options].flatten.map do |details|
@@ -100,6 +107,12 @@ module Fedex
       def success?(response)
         response[:envelope] && response[:envelope][:body] && response[:envelope][:body][:track_reply] &&
           %w{SUCCESS WARNING NOTE}.include?(response[:envelope][:body][:track_reply][:highest_severity])
+      end
+
+      # Successful teacking number
+      def success_tracking?(data)
+        data && data[:notification] &&
+          %w{SUCCESS WARNING NOTE}.include?(data[:notification][:severity])
       end
 
       def package_type_valid?
